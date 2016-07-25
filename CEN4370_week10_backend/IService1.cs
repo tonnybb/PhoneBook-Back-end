@@ -12,36 +12,12 @@ namespace CEN4370_week10_backend
     [ServiceContract]
     public interface IService1
     {
+        [OperationContract]
+        [WebGet(UriTemplate = "/{lastName}")]
+        string[] GetEntries(string lastName);
 
         [OperationContract]
-        string GetData(int value);
-
-        [OperationContract]
-        CompositeType GetDataUsingDataContract(CompositeType composite);
-
-        // TODO: Add your service operations here
-    }
-
-
-    // Use a data contract as illustrated in the sample below to add composite types to service operations.
-    [DataContract]
-    public class CompositeType
-    {
-        bool boolValue = true;
-        string stringValue = "Hello ";
-
-        [DataMember]
-        public bool BoolValue
-        {
-            get { return boolValue; }
-            set { boolValue = value; }
-        }
-
-        [DataMember]
-        public string StringValue
-        {
-            get { return stringValue; }
-            set { stringValue = value; }
-        }
+        [WebGet(UriTemplate = "/{lastName}/{firstName}/{phoneNumber}")]
+        string AddEntries(string lastName, string firstName, string phoneNumber);
     }
 }

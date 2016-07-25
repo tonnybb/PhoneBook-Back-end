@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.ServiceModel;
@@ -12,22 +13,51 @@ namespace CEN4370_week10_backend
     // NOTE: In order to launch WCF Test Client for testing this service, please select Service1.svc or Service1.svc.cs at the Solution Explorer and start debugging.
     public class Service1 : IService1
     {
-        public string GetData(int value)
+        private PhoneBookEntities dbcontext = new PhoneBookEntities();
+
+        public string[] GetEntries(string lastName)
         {
-            return string.Format("You entered: {0}", value);
+            // query database for entries with a given last name
+            // save results into string array
+            var query =
+                from PhoneBook in dbcontext.PhoneBooks
+                where PhoneBook.LastName.Contains(lastName)
+                select new { PhoneBook.FirstName, PhoneBook.LastName, PhoneBook.PhoneNumber } ;
+
+            List<string> entries = new List<string>();
+
+            foreach (var element in query)
+            {
+                string entry = element.LastName.Trim() + ", " + element.FirstName.Trim() + ", " + element.PhoneNumber.Trim();
+                entries.Add(entry); 
+            }
+
+
+            string[] myArray = entries.ToArray();
+            return myArray;
         }
 
-        public CompositeType GetDataUsingDataContract(CompositeType composite)
+        public string AddEntries(string lastName, string firstName, string phoneNumber)
         {
-            if (composite == null)
+            PhoneBook pb = new PhoneBook()
             {
-                throw new ArgumentNullException("composite");
-            }
-            if (composite.BoolValue)
+                FirstName = firstName,
+                LastName = lastName,
+                PhoneNumber = phoneNumber
+            };
+
+            try
             {
-                composite.StringValue += "Suffix";
+                dbcontext.PhoneBooks.Add(pb);
+                dbcontext.SaveChanges();
             }
-            return composite;
+            catch (DbUpdateException e)
+            {
+                return "Something went wrong while updating the database." +
+                    "\n Detailed error message: \n" + e.InnerException;
+            }
+
+            return "Entry added successfully";
         }
     }
 }
